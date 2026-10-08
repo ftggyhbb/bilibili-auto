@@ -16,7 +16,8 @@ jobs:
           pip install requests -q
           python - <<'PY'
           import os, requests
-          cookie = "SESSDATA=%s; bili_jct=%s; DedeUserID=%s" % (os.environ["SESSDATA"], os.environ["BILI_JCT"], os.environ["DEDEUSERID"])
+          base = "buvid3=DFD9F708-27C3-3EC4-E931-B2092F5E6C8739836infoc; buvid4=84A5C4AA-4B89-21A1-81BA-BFB725C7ACB841859-026100902-ekiSQ5TsKey9VUj3JowAqA%3D%3D; buvid_fp=c4f31a6181c3a583815f4fa6e3a976f7; b_nut=1791484839"
+          cookie = "SESSDATA=%s; bili_jct=%s; DedeUserID=%s; %s" % (os.environ["SESSDATA"], os.environ["BILI_JCT"], os.environ["DEDEUSERID"], base)
           h = {"User-Agent":"Mozilla/5.0","Cookie":cookie,"Referer":"https://www.bilibili.com/"}
           nav = requests.get("https://api.bilibili.com/x/web-interface/nav", headers=h).json()
           if nav.get("code") != 0:
