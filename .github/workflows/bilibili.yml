@@ -1,0 +1,38 @@
+name: Bilibili Daily Sign
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+jobs:
+  signin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bilibili sign-in
+        env:
+          SESSDATA: \${{ secrets.SESSDATA }}
+          BILI_JCT: \${{ secrets.BILI_JCT }}
+          DEDEUSERID: \${{ secrets.DEDEUSERID }}
+        run: |
+          pip install requests -q
+          python - <<'PY'
+          import os, requests
+          cookie = "SESSDATA=%s; bili_jct=%s; DedeUserID=%s" % (os.environ["SESSDATA"], os.environ["BILI_JCT"], os.environ["DEDEUSERID"])
+          h = {"User-Agent":"Mozilla/5.0","Cookie":cookie,"Referer":"https://www.bilibili.com/"}
+          nav = requests.get("https://api.bilibili.com/x/web-interface/nav", headers=h).json()
+          if nav.get("code") != 0:
+              print("login fail:", nav); raise SystemExit(1)
+          d = nav["data"]
+          print("OK:", d.get("uname"), "coins:", d.get("money"), "exp:", d.get("level_info",{}).get("current_exp"))
+          try:
+              ls = requests.get("https://api.live.bilibili.com/xlive/web-ucenter/v1/sign/DoSign", headers=h).json()
+              print("live sign:", ls.get("message") or ls)
+          except Exception as e:
+              print("live sign err:", e)
+          try:
+              mh = dict(h); mh["Content-Type"]="application/json"
+              ms = requests.post("https://manga.bilibili.com/twirp/activity.v1.Activity/ClockIn", params={"device":"pc","platform":"web"}, headers=mh, json={}).json()
+              print("manga sign:", ms.get("msg") or ms)
+          except Exception as e:
+              print("manga sign err:", e)
+          print("done")
+          PY
