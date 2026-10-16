@@ -9,9 +9,9 @@ jobs:
     steps:
       - name: Bilibili sign-in
         env:
-          SESSDATA: \${{ secrets.SESSDATA }}
-          BILI_JCT: \${{ secrets.BILI_JCT }}
-          DEDEUSERID: \${{ secrets.DEDEUSERID }}
+          SESSDATA: ${{ secrets.SESSDATA }}
+          BILI_JCT: ${{ secrets.BILI_JCT }}
+          DEDEUSERID: ${{ secrets.DEDEUSERID }}
         run: |
           pip install requests -q
           python - <<'PY'
