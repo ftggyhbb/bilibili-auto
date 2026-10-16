@@ -7,6 +7,9 @@ jobs:
   signin:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Bilibili sign-in
         env:
           SESSDATA: ${{ secrets.SESSDATA }}
@@ -14,7 +17,7 @@ jobs:
           DEDEUSERID: ${{ secrets.DEDEUSERID }}
         run: |
           pip install requests -q
-          python - <<'PY'
+          python - <<'PY' 2>&1 | tee sign.log
           import os, requests
           base = "buvid3=DFD9F708-27C3-3EC4-E931-B2092F5E6C8739836infoc; buvid4=84A5C4AA-4B89-21A1-81BA-BFB725C7ACB841859-026100902-ekiSQ5TsKey9VUj3JowAqA%3D%3D; buvid_fp=c4f31a6181c3a583815f4fa6e3a976f7; b_nut=1791484839"
           cookie = "SESSDATA=%s; bili_jct=%s; DedeUserID=%s; %s" % (os.environ["SESSDATA"], os.environ["BILI_JCT"], os.environ["DEDEUSERID"], base)
@@ -37,3 +40,9 @@ jobs:
               print("manga sign err:", e)
           print("done")
           PY
+
+      - name: Push result to WeChat
+        if: always()
+        env:
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+        run: python pushplus_notify.py "B站每日签到" sign.log "${{ job.status }}"
